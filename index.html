@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>The Catcade</title>
+</head>
+<body>
+    <meta charset="UTF-8">
+    <style>
+         h1 {
+            color: purple;
+            text-align: center;
+            font-family: "Comic Sans MS", cursive, sans-serif;
+            border: 3px solid pink;
+            padding: 20px;
+            width: 40%;
+            margin: 10px;
+            border-radius: 15px;
+            background-color: lightyellow;
+            z-index: 2;
+            position: relative;
+        }
+
+        h2 {
+            color: orange;
+            text-align: center;
+            font-family: "Comic Sans MS", cursive, sans-serif;
+            z-index: 2;
+            position: relative;
+        }
+
+        .header-with-cats {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 0;
+            z-index: 2;
+            position: relative;
+        }
+
+        .cat {
+            width: 10%;
+            height:auto;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        @keyframes bounce {
+         0%   { transform: translateY(0); }
+         30%  { transform: translateY(-30px); }  /* jump up */
+         50%  { transform: translateY(0); }
+         70%  { transform: translateY(-15px); }  /* small rebound */
+         100% { transform: translateY(0); }
+        }
+        
+        .cat.bouncing {
+            animation: bounce 0.6s;
+        }
+ 
+    </style>
+
+    <div class="header-with-cats">
+        <img src="website/Images/Left_Cat2.png" alt="Left Cat" class="cat" data-sound="meow-left">
+        <h1>Welcome to the Catcade!</h1>
+        <img src="website/Images/Right_Cat2.png" alt="Right Cat" class="cat" data-sound="meow-right">
+    </div>
+    
+    <h2>This is the start to our project.</h2>
+
+    <style>
+        .button-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+            gap: 20px;
+            z-index: 1;
+            position: relative;
+        }
+
+        button {
+            font-family: "Comic Sans MS", cursive, sans-serif;
+            padding: 24px 24px;
+            font-size: 25px;
+            background-color: rgb(208, 144, 238);
+            color:black;
+            border: 3px solid rgb(138, 54, 248);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: rgb(138, 54, 248);
+        }
+
+        body {
+            position: relative;
+            margin: 0px;
+            padding: 0px;
+            min-height: 100vh;
+            background-color: rgb(238, 200, 240);
+        }
+
+        .runner {
+            position: absolute;
+            top: 0;
+            width: 100px;
+            height: 100%;
+            background: linear-gradient(to bottom, rgb(149, 73, 248), rgb(208, 144, 238));
+            z-index: 0;
+        }
+
+        .runner.left {
+            left: 0;
+        }
+        .runner.right {
+            right: 0;
+        }
+
+    </style>
+
+    <div class="button-bar">
+     <button onclick="openFirstSite()">Maze Escape</button>
+     <button onclick="openSecondSite()">Paws, Claws, Whiskers</button>
+     <button onclick="openThirdSite()">Go to Third Page</button>
+    </div>
+
+    <div class="button-bar">
+     <button onclick="openFourthSite()">Go to Fourth Page</button>
+     <button onclick="openFifthSite()">Go to Fifth Page</button>
+     <button onclick="openSixthSite()">Go to Sixth Page</button>
+    </div>
+
+    <div class="runner left"></div> 
+    <div class="runner right"></div> 
+
+    <script>
+        function openFirstSite() {
+            window.location.href = "website/FirstSite.html"
+        } 
+        function openSecondSite() {
+            window.location.href = "website/SecondSite.html"
+        }
+        function openThirdSite() {
+            window.location.href = "website/ThirdSite.html"
+        }
+        function openFourthSite() {
+            window.location.href = "website/FourthSite.html"
+        }
+        function openFifthSite() {
+            window.location.href = "website/FifthSite.html"
+        }
+        function openSixthSite() {
+            window.location.href = "website/SixthSite.html"
+        }
+
+        document.querySelectorAll('.cat').forEach(cat => {
+            cat.addEventListener('click', () => {
+                cat.classList.add('bouncing');
+                
+                cat.addEventListener('animationend', () => {
+                    cat.classList.remove('bouncing');
+                }, { once: true });
+
+                const soundId = cat.dataset.sound;
+                const soundElement = document.getElementById(soundId);
+
+                if (soundElement) {
+                    soundElement.currentTime = 0; 
+                    soundElement.play();
+                }
+            });
+        });
+
+    </script>
+
+
+    <audio id="meow-left" src="website/Audio/Cat_Meow1.mp3" preload="auto"></audio>
+    <audio id="meow-right" src="website/Audio/Cat_Meow3.mp3" preload="auto"></audio>
+
+</body>
+</html>

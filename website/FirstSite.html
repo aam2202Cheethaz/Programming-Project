@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Maze Game</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #0e8bf1;
+      margin: 0;
+    }
+
+    h1 {
+      color: purple;
+      font-family: Arial, sans-serif;
+      font-size: 2em;
+      margin: 0;
+      padding: 5px 10px;
+      background-color: rgb(0, 191, 255);
+      border: 3px solid rgb(49, 80, 255);
+      border-radius: 10px;
+      text-align: center;
+      z-index: 2;
+      position: relative;
+    }
+
+    p {
+      font-size: 1.2em;
+      font-family:Arial, sans-serif;
+      color: rgb(0, 0, 0);
+      margin: 5px;
+      padding: 2px 5px;
+      text-align: center;
+      z-index: 2;
+      position: relative;
+    }
+
+    #difficulty-controls {
+      margin-bottom: 20px;
+      z-index: 2;
+      position: relative;
+    }
+
+    button {
+      margin: 0 5px;
+      padding: 8px 16px;
+      font-size: 1em;
+      cursor: pointer;
+      border: none;
+      border-radius: 3px;
+      background-color: rgb(0, 191, 255);
+      color: black;
+    }
+
+    button:hover {
+      background-color: rgb(49, 80, 255);
+      color: white;
+    }
+
+    canvas {
+      background: white;
+      border: 3px solid black;
+      z-index: 2;
+      position: relative;
+    }
+
+    .runner {
+      position: absolute;
+      top: 0;
+      width: 100px;
+      height: 100%;
+      background: linear-gradient(to bottom, blue, rgb(49, 80, 255), lightblue);
+      z-index: 0;
+    }
+
+    .runner.left {
+        left: 0;
+        
+    }
+    .runner.right {
+        right: 0;
+    }    
+
+  .home-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    padding: 8px 16px;
+    font-size: 1em;
+    border: 2px solid white;
+    border-radius: 6px;
+    background: #444;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    z-index: 1000; /* stays above the canvas/header */
+  }
+
+    .home-btn:hover { background: #666; }
+
+  </style>
+</head>
+<body>
+  <h1>Escape The Maze</h1>
+  <p>Reach the green box, use your arrow keys to move.</p>
+  
+  <a class="home-btn" href="../index.html" aria-label="Go to homepage">Home</a>
+
+    <div id="difficulty-controls">
+        <button id="btn-easy" onclick="setDifficulty(20, this)">Easy</button>
+        <button id="btn-medium" onclick="setDifficulty(25, this)">Medium</button>
+        <button id="btn-hard" onclick="setDifficulty(30, this)">Hard</button>
+    </div>
+
+    <div class="runner left"></div> 
+    <div class="runner right"></div>
+
+  <canvas id="mazeCanvas" width="600" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById("mazeCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    const catImg = new Image();
+    let catReady = false;
+    catImg.onload = () => { catReady = true; drawMaze(); };
+    catImg.onerror = (e) => { console.error("Failed to load cat image. Check the path/file name"); };
+    catImg.src = "Images/Maze_Cat.png"; 
+
+    let rows = 30;
+    let cols = 30;
+    let cellSize = canvas.width / cols;
+
+    const dirs = [
+      { dx: 0, dy: -1 }, // up
+      { dx: 1, dy: 0 },  // right
+      { dx: 0, dy: 1 },  // down
+      { dx: -1, dy: 0 }  // left
+    ];
+
+    let maze = [];
+    let player = { x: 0, y: 0 };
+
+    function creatGrid() {
+        maze = new Array(rows);
+        for (let r = 0; r < rows; r++) {
+            maze[r] = [];
+            for (let c = 0; c < cols; c++) {
+                maze[r][c] = { visited: false, walls: [true, true, true, true] };
+        }
+      }
+    }
+
+    // checking maze is possible to solve
+    function generateMaze(r, c) {
+      maze[r][c].visited = true;
+      let directions = [...dirs.entries()];
+      directions.sort(() => Math.random() - 0.5);
+
+      for (let [i, d] of directions) {
+        let nr = r + d.dy;
+        let nc = c + d.dx;
+        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !maze[nr][nc].visited) {
+          maze[r][c].walls[i] = false;
+          maze[nr][nc].walls[(i + 2) % 4] = false;
+          generateMaze(nr, nc);
+        }
+      }
+    }
+
+    function createAndGenerateMaze() {
+        creatGrid();
+        generateMaze(0, 0);
+    }
+
+  function drawMaze() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 1;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          let x = c * cellSize;
+          let y = r * cellSize;
+          let walls = maze[r][c].walls;
+
+          if (walls[0]) { //top
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + cellSize, y);
+            ctx.stroke();
+          }
+          if (walls[1]) { //right
+            ctx.beginPath();
+            ctx.moveTo(x + cellSize, y);
+            ctx.lineTo(x + cellSize, y + cellSize);
+            ctx.stroke();
+          }
+          if (walls[2]) { //bottom
+            ctx.beginPath();
+            ctx.moveTo(x, y + cellSize);
+            ctx.lineTo(x + cellSize, y + cellSize);
+            ctx.stroke();
+          }
+          if (walls[3]) { //left
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + cellSize);
+            ctx.stroke();
+          }
+        }
+      }
+        // the escape point
+      ctx.fillStyle = "green";
+      ctx.fillRect(
+            (cols - 1) * cellSize + 3,
+            (rows - 1) * cellSize + 3,
+            cellSize - 6,
+            cellSize - 6
+        );
+    
+
+    // Player (cat image)
+    const px = player.x * cellSize, py = player.y * cellSize;
+    if (catReady) {
+     const pad = Math.max(2, cellSize * 0.1); // small padding so it fits inside walls nicely
+    ctx.drawImage(catImg, px + pad, py + pad, cellSize - 2 * pad, cellSize - 2 * pad);
+    } else {
+      ctx.beginPath();
+      ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize / 3, 0, Math.PI * 2);
+      ctx.fillStyle = "red";
+      ctx.fill();
+    }
+  }
+
+  // Move player function (now global)
+  function movePlayer(dx, dy) {
+    let r = player.y;
+    let c = player.x;
+    let cell = maze[r][c];
+
+    if (dx === 0 && dy === -1 && !cell.walls[0]) player.y--;
+    if (dx === 1 && dy === 0 && !cell.walls[1]) player.x++;
+    if (dx === 0 && dy === 1 && !cell.walls[2]) player.y++;
+    if (dx === -1 && dy === 0 && !cell.walls[3]) player.x--;
+    if (player.x === cols - 1 && player.y === rows - 1) {
+      setTimeout(() => alert("You escaped the maze! 🎉"), 50);
+      player = { x: 0, y: 0 };
+    }
+    drawMaze();
+  }
+
+    // Set difficulty
+    function setDifficulty(size, btnEl) {
+      rows = size;
+      cols = size;
+      cellSize = canvas.width / cols;
+
+      createAndGenerateMaze();
+      player = { x: 0, y: 0 };
+      drawMaze();
+
+      doucment.querySelectorAll("#controls button").forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+    }
+
+    document.addEventListener("keydown", (e) => {
+        const k = e.key;
+        if (k === "ArrowUp" || k === "ArrowDown" || k === "ArrowLeft" || k === "ArrowRight") {
+            e.preventDefault(); // Prevent scrolling
+        }
+      switch (k) {
+        case "ArrowUp": movePlayer(0, -1); break;
+        case "ArrowDown": movePlayer(0, 1); break;
+        case "ArrowLeft": movePlayer(-1, 0); break;
+        case "ArrowRight": movePlayer(1, 0); break;
+      }
+    });
+
+    setDifficulty(30, document.getElementById('btn-hard'));
+  </script>
+</body>
+</html>
